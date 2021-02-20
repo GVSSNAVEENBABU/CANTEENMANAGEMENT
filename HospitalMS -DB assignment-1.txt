@@ -1,0 +1,46 @@
+create database HospitalMS;
+use HospitalMS;
+create table Doctor(d_id varchar(15) primary key,d_name varchar(15) not null,dept varchar(15) not null);
+desc Doctor;
+insert into Doctor values('D0001','Ram','ENT'),('D0002','Rajan','ENT'),('D0003','Smita','Eye'),('D0004','Bhavan','Surgery'),('D0005','Sheela','Surgery'),('D0006','Nethra','Surgery');
+select * from Doctor;
+create table room(r_no varchar(15) primary key, r_type varchar(15), status varchar(15));
+select * from room;
+insert into room values("R0001","AC","occupied"),("R0002","Suite","vacant"),("R0003","NonAC","vacant"),("R0004","NonAC","occupied"),("R0005","AC","vacant"),("R0006","AC","occupied");
+create table patient(pid varchar(15) primary key,pname varchar(15) not null,age int not null,weight int not null,gender varchar(10),address varchar(50) not null,pno varchar(10),disease varchar(50),docid varchar(50));
+select * from patient;
+INSERT INTO `hospitalms`.`patient` (`pid`, `pname`, `age`, `weight`, `gender`, `address`, `pno`, `disease`, `docid`) VALUES ('P0001', 'Gita', '35', '65', 'F', 'Chennai', '9867145678', 'Eye infection', 'D0003');
+INSERT INTO `hospitalms`.`patient` (`pid`, `pname`, `age`, `weight`, `gender`, `address`, `pno`, `disease`, `docid`) VALUES ('P0002', 'Ashish', '40', '70', 'M', 'Delhi', '9845675678', 'Asthma', 'D0003');
+INSERT INTO `hospitalms`.`patient` (`pid`, `pname`, `age`, `weight`, `gender`, `address`, `pno`, `disease`, `docid`) VALUES ('P0003', 'Radha', '25', '60', 'F', 'Chennai', '9867166678', 'Pain in heart', 'D0005');
+INSERT INTO `hospitalms`.`patient` (`pid`, `pname`, `age`, `weight`, `gender`, `address`, `pno`, `disease`, `docid`) VALUES ('P0004', 'Chandra', '28', '55', 'F', 'Banglore', '9978675567', 'Ashtma', 'D0001');
+INSERT INTO `hospitalms`.`patient` (`pid`, `pname`, `age`, `weight`, `gender`, `address`, `pno`, `disease`, `docid`) VALUES ('P0005', 'Goyal', '42', '65', 'M', 'Delhi', '8967533233', 'Pain stomach', 'D0004');
+create table roomalloc(rno varchar(15),pid varchar(15),ad_date Date,rl_date date);
+desc roomalloc;
+ALTER TABLE `hospitalms`.`roomalloc` 
+ADD INDEX `rno_idx` (`rno` ASC) VISIBLE,
+ADD INDEX `pid_idx` (`pid` ASC) VISIBLE;
+;
+ALTER TABLE `hospitalms`.`roomalloc` 
+ADD CONSTRAINT `rno`
+  FOREIGN KEY (`rno`)
+  REFERENCES `hospitalms`.`room` (`r_no`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION,
+ADD CONSTRAINT `pid`
+  FOREIGN KEY (`pid`)
+  REFERENCES `hospitalms`.`patient` (`pid`)
+  ON DELETE CASCADE
+  ON UPDATE CASCADE;
+select * from roomalloc;
+
+INSERT INTO `hospitalms`.`roomalloc` (`rno`, `pid`, `ad_date`, `rl_date`) VALUES ('R0001', 'P0001', '15-10-16', '26-10-16');
+INSERT INTO `hospitalms`.`roomalloc` (`rno`, `pid`, `ad_date`, `rl_date`) VALUES ('R0002', 'P0002', '15-11-16', '26-11-16');
+INSERT INTO `hospitalms`.`roomalloc` (`rno`, `pid`, `ad_date`, `rl_date`) VALUES ('R0003', 'P0003', '01-12-16', '30-12-16');
+INSERT INTO `hospitalms`.`roomalloc` (`rno`, `pid`, `ad_date`, `rl_date`) VALUES ('R0004', 'P0004', '01-01-17', '30-01-17');
+
+select * from patient where pid=(select pid from roomalloc where month(ad_date)=01);
+select * from patient where gender='F' and disease != "Asthma";
+select gender,count(*) from patient group by gender;
+select pname,d_id,d_name,r_no,r_type,ad_date from Doctor,room,patient,roomalloc;
+select * from room where status="vacant";
+select * from room where r_no in(select rno from roomalloc group by rno having count(*)>1);
